@@ -39,7 +39,17 @@ router.post("/register", async (req, res) => {
 router.get("/registrations", async (req, res) => {
   try {
     const [rows] = await db.execute("SELECT * FROM registrations ORDER BY id DESC");
-    res.json(rows);
+
+    const updatedRows = rows.map((row) => {
+    const birthDate = new Date(row.dateOfBirth);
+    const ageDiff = Date.now() - birthDate.getTime();
+    const ageDate = new Date(ageDiff);
+    const age = Math.abs(ageDate.getUTCFullYear() - 1970);
+    return { ...row, age, isUnder18: age < 18 };
+});
+
+  res.json(updatedRows);
+
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch registrations" });
   }
