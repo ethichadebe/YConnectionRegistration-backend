@@ -66,7 +66,23 @@ router.get("/registration/:id", async (req, res) => {
       return res.status(404).json({ message: "Registration not found" });
     }
 
-    res.json(rows[0]);
+    const registration = rows[0];
+
+    // ✅ Calculate age and isUnder18
+    const today = new Date();
+    const birthDate = new Date(registration.dateOfBirth);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+
+    const isUnder18 = age < 18;
+
+    res.json({
+      ...registration,
+      isUnder18, // ⬅️ Inject this computed value into the response
+    });
   } catch (error) {
     console.error("Error fetching registration:", error);
     res.status(500).json({ message: "Internal server error" });
